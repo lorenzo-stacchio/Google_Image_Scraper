@@ -13,3 +13,4 @@ The implementation is based mostly on [selenium](https://selenium-python.readthe
 * Cmd like commands with argument parsing
 * Documentation
 * Add remainings possible google image search options
+* Capture network responses for all images to get all urls in an instant!
