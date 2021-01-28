@@ -43,12 +43,9 @@ class GoogleImageScraper():
 
     def get_url_image_from_dedicated_google_url(self, url):
         assert url  # url must be not None
-        #print(url)
         r = requests.get(url)
         soup = BeautifulSoup(r.text, "html.parser")
         images = soup.findAll('img')  # there are two images tags, the second one contains the good url
-        # for el in images:
-        #     print(el)
         return images[1]['src']  # return its source
 
     def adjust_url(self,url):
@@ -61,19 +58,11 @@ class GoogleImageScraper():
         return url
 
     def init_driver(self):
-        #TODO
-        pass
-
-    def find_image_urls(self):
-        print("GoogleImageScraper Notification: Scraping for image link... Please wait.")
-        image_urls=[]
-        image_halts = []
         # custom options
         options = Options()
-        if(self.headless):
-            #options.add_argument("--start-maximized")
+        if (self.headless):
+            # options.add_argument("--start-maximized")
             options.add_argument('--headless')
-
         prefs = {'profile.default_content_setting_values': {'cookies': 2,
                                                             'plugins': 2, 'popups': 2, 'geolocation': 2,
                                                             'notifications': 2, 'auto_select_certificate': 2,
@@ -90,11 +79,18 @@ class GoogleImageScraper():
                                                             'site_engagement': 2,
                                                             'durable_storage': 2}}
         options.add_experimental_option('prefs', prefs)
-        #options.add_argument("start-maximized")
+        # options.add_argument("start-maximized")
         options.add_argument("disable-infobars")
         options.add_argument("--disable-extensions")
         ####################################################
-        driver = webdriver.Chrome(self.webdriver_path, chrome_options=options)
+        return webdriver.Chrome(self.webdriver_path, chrome_options=options)
+
+
+    def find_image_urls(self):
+        print("GoogleImageScraper Notification: Scraping for image link... Please wait.")
+        image_urls=[]
+        image_halts = []
+        driver = self.init_driver()
         driver.set_window_position(int((self.screen_width)*0.83/2), 0) # *0.9 is to struggle against selenium sizing vs windows sizing problems
         driver.set_window_size(int((self.screen_width)*0.83/2), int(self.screen_height)*0.85)
         driver.get(self.url)
@@ -113,31 +109,30 @@ class GoogleImageScraper():
                 end_reached = True
             else:
                 last_height = new_height
-        print("End reached")
         print("----PARSING LINKS TO HTML PAGE FOR SINGLE IMAGES----")
         a_images = {idx+1: el for idx, el in enumerate(driver.find_elements_by_xpath('//*[@id="islrg"]/div[1]/div/a[1]'))}
-        #print(driver.find_element_by_xpath('//*[@id="islrg"]/div[1]').get_attribute('innerHTML'))
         num_of_images_found = len(a_images)
         print(str(num_of_images_found))
-        # TODO:PARALLELIZZARE SU DIVERSE TAB DEL BROWSER
-        for indx in range (1,num_of_images_found):
-            t = time.time()
+        for indx in range(1, num_of_images_found):
             try:
-                #print("INDICE ATTUALE", indx-1)
+                # print("INDICE ATTUALE", indx-1)
                 imgurl = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img' % (
                     str(indx)))  # con questo arrivi a cliccare all'immagine numero n
                 imgurl.click()
-                time.sleep(0.2)
+            except Exception as _:
+                pass
+        time.sleep(1)
+        for indx in range (1,num_of_images_found):
+            try:
+                imgurl = driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img' % (
+                    str(indx)))  # con questo arrivi a cliccare all'immagine numero n
                 google_url= driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]' % (str(indx))).get_attribute("href")
                 url = self.get_url_image_from_dedicated_google_url(google_url)
                 url = self.adjust_url(url)
-                print(url, "\n", self.adjust_string_path(imgurl.get_attribute("alt")))
                 image_urls.append(url)
                 image_halts.append(self.adjust_string_path(imgurl.get_attribute("alt")))  # append image alt
-                print("Found", len(image_urls), "on", indx)
-                #ulreq.urlretrieve(src, self.image_path + image_alt + "___" + str(time.time_ns()) + ".jpg")
-            except Exception as e:
-                print(e)
+            except Exception as _:
+                pass
         driver.close()
         return image_urls,image_halts
 
@@ -146,28 +141,35 @@ class GoogleImageScraper():
         for url, alt in zip(urls_part,alts_part):
             try:
                 opener = ulreq.build_opener()
-                opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+                opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5')]
                 ulreq.install_opener(opener)
-                #opener.addheader("{User-agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5}")
+                print(url)
+                print(image_path + str(partition_id) + "___" + alt + "___" + str(time.time_ns()) + ".jpg")
                 ulreq.urlretrieve(url, image_path + str(partition_id) + "___" + alt + "___" + str(time.time_ns()) + ".jpg")
             except Exception as e:
-                print(e, "on", url)
+                print(e)
 
-    def download_urls(self,image_urls,image_halts):
-        assert len(image_urls)==len(image_halts)
-        partitions = mp.cpu_count()
-        processes = []
-        parts_size = int(len(image_urls)/(partitions))
-        rest = round(len(image_urls)%partitions)
-        for idx in range(partitions):
-            start = idx*parts_size
-            if idx == partitions-1:# this is last
-                end = start + parts_size + rest
-            else:
-                end = start + parts_size
-            print(start,end)
-            p = Process(target=self.download_single_image, args=(self.image_path, image_urls[start:end],image_halts[start:end],idx))
-            p.start()
-            processes.append(p)
-        for p in processes:
-            p.join()
+
+    def download_urls(self,image_urls,image_halts, workers = mp.cpu_count()):
+        assert workers>0
+        assert len(image_urls) == len(image_halts)
+
+        if workers==1:
+            self.download_single_image(self.image_path, image_urls,image_halts, 0)
+        else:
+            partitions = mp.cpu_count()
+            processes = []
+            parts_size = int(len(image_urls)/(partitions))
+            rest = round(len(image_urls)%partitions)
+            for idx in range(partitions):
+                start = idx*parts_size
+                if idx == partitions-1:# this is last
+                    end = start + parts_size + rest
+                else:
+                    end = start + parts_size
+                print(start,end)
+                p = Process(target=self.download_single_image, args=(self.image_path, image_urls[start:end],image_halts[start:end],idx))
+                p.start()
+                processes.append(p)
+            for p in processes:
+                p.join()
