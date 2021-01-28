@@ -23,7 +23,7 @@ class GoogleImageScraper():
         self.headless = headless
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.bad_chars_list = ["|", ",", "-", ";", "?", "!", "(", ")", "/", ":",".", "\\", ]
+        self.bad_chars_list = ["|", ",", "-", ";", "?", "!", "(", ")", "/", ":",".", "\\","\"" ]
         self.url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
         print(self.url)
         if color in self.list_of_possible_colors:
