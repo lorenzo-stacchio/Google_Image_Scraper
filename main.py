@@ -22,7 +22,7 @@ def checkdirexist(path):
 #add new search key into array ["cat","t-shirt","apple","orange","pear","fish"]
 search_keys= ["green trouser portrait 2020"]
 
-number_of_images = 10
+number_of_images = "all"
 
 width_screen, height_screen = get_monitors()[0].width,get_monitors()[0].height
 print(width_screen,height_screen)
@@ -44,5 +44,5 @@ if __name__ == '__main__':
         if len(image_halts)==0:
             image_halts = ["image" + str(idx) for idx in range(len(image_urls))]
         print("Time consumed finding urls", time.time()-t)
-        image_scrapper.download_urls(image_urls,image_halts,4)
+        image_scrapper.download_urls(image_urls,image_halts)
         print("Time for downloading urls", time.time() - t)

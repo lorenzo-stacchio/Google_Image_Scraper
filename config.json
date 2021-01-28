@@ -1,6 +1,17 @@
 {
+  "time": {
   "time_wait_between_clicks":0.0,
   "time_wait_between_dowloads": 0.0,
   "time_wait_between_scrolling": 2.0,
-  "timeout_for_download_images": 10
+  "timeout_for_download_images": 5
+  },
+  "image_params": {
+    "colors": {
+      "normal": ["green", "yellow", "orange", "red", "white", "teal", "blue", "purple", "pink", "gray",
+                                    "black", "brown"],
+      "trasparent_code": "trans",
+      "black_and_white": "gray"
+    }
+  },
+  "chars_to_clean_urls": ["|", ",", "-", ";", "?", "!", "(", ")", "/", ":",".", "\\","\"" ]
 }

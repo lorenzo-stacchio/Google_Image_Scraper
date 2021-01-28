@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 **/photos/
 **/test_parsing/
+**/test_javascript/
