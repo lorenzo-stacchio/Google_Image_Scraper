@@ -8,3 +8,8 @@ The implementation is based mostly on [selenium](https://selenium-python.readthe
 * It scrolls down the entire google image search. This is made to avoid slowness in next steps but also to count the total number of image found;
 * It click an all the images found, to retrieve origin urls.
 * It parse all the found urls and download images through them. 
+
+# TODO
+* Cmd like commands with argument parsing
+* Documentation
+* Add remainings possible google image search options
