@@ -12,7 +12,7 @@ import json
 
 class GoogleImageScraper():
     
-    def __init__(self,webdriver_path,image_path, search_key,number_of_images, screen_width, screen_height,similar_images = False, link_similar_image=None,color=None, shape=None, headless=True):
+    def __init__(self,webdriver_path,image_path, search_key,number_of_images, screen_width, screen_height,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
         self.search_key = search_key
         self.number_of_images = number_of_images
         self.webdriver_path = webdriver_path
@@ -22,6 +22,7 @@ class GoogleImageScraper():
         self.screen_height = screen_height
         self.color = color
         self.shape = shape
+        self.photo_type = photo_type
         self.similar_image = similar_images
         self.link_similar_image = link_similar_image
         #self.url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
@@ -30,8 +31,8 @@ class GoogleImageScraper():
         self.time_wait_between_dowloads,self.time_wait_between_scrolling,self.timeout_for_download_images = None,None,None 
         # color variables 
         self.color_list,self.colorized, self.black_and_white, self.transparent = None,None,None,None
+        self.shapes,self.photo_types = None,None
         self.chars_to_clean_urls = None # chars to replace in urls
-        self.shapes = None
         # Load configs and parse arguments
         config_dict = self.load_config()
         self.init_parameters(config_dict)
@@ -45,7 +46,7 @@ class GoogleImageScraper():
             config_dict = json.loads(config_file)
             return config_dict
 
-
+    # TODO: IMPLEMENTARE RICERCA PER PAESE
     def init_parameters(self, config_dict):
         print(config_dict)
         socket.setdefaulttimeout(config_dict["time"]["timeout_for_download_images"]) #set time limit to download
@@ -57,6 +58,7 @@ class GoogleImageScraper():
         self.transparent = config_dict["image_params"]["colors"]["trasparent_code"]
         self.black_and_white = config_dict["image_params"]["colors"]["black_and_white"]
         self.shapes = config_dict["image_params"]["shapes"]
+        self.photo_types = config_dict["image_params"]["type_of_image"]
         self.chars_to_clean_urls = config_dict["chars_to_clean_urls"]
 
 
@@ -66,7 +68,7 @@ class GoogleImageScraper():
         if self.similar_image: # other type of research
             url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(link_similar_image)
             return self.get_url_similar_images_google(url)
-        else: #normal search
+        else: # NORMAL SEARCH
             # tra un parametro e l'altro ci va la virgola ---> &tbs=ic:color,iar:t
             # parsing color
             color_string = None
@@ -85,8 +87,12 @@ class GoogleImageScraper():
             shape_string = None
             if self.shape in self.shapes.keys():
                 shape_string = "iar:" + self.shapes[self.shape]
-            "square", "wide", "panoramic"
-            final_string_filter = "tbs=" + ','.join([filter  for filter in [color_string,shape_string] if filter])
+            # parsing photo type
+            photo_type_string = None
+            if self.photo_type in self.photo_types.keys():
+                photo_type_string = "itp:" + self.photo_types[self.photo_type]
+            #itp
+            final_string_filter = "tbs=" + ','.join([filter  for filter in [color_string,shape_string,photo_type_string] if filter])
             return self.base_url.replace("tbs", str(final_string_filter))
 
     def get_url_similar_images_google(self,url):

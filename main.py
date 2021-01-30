@@ -38,7 +38,7 @@ if __name__ == '__main__':
         #image_scrapper = GoogleImageScraper(webdriver_path,image_path,search_key,number_of_images,width_screen,height_screen)
         #image_scrapper = GoogleImageScraper(webdriver_path,image_path,search_key,number_of_images,width_screen,height_screen,similar_images = True, link_similar_image="https://static.zara.net/photos///contents/mkt/spots/ss21-north-new-in-man/subhome-xmedia-03//w/1900/img-large-landscape-513a9b3af139cdc88ef8cb6ea3c9907c_0.jpg?ts=1611344365227")
         image_scrapper = GoogleImageScraper(webdriver_path, image_path, search_key, number_of_images, width_screen,
-                                            height_screen, color="green", shape="tall", headless=False)
+                                            height_screen, color="green", shape="tall",photo_type="photo", headless=False)
         image_urls,image_halts = image_scrapper.find_image_urls()
         print(len(image_urls), len(image_halts))
         print(image_urls)

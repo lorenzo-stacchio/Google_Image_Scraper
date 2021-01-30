@@ -18,6 +18,13 @@
       "square": "s",
       "wide": "w",
       "panoramic": "xw"
+    },
+    "type_of_image": {
+      "photo": "photo",
+      "face": "face",
+      "drawings": "lineart",
+      "clipart": "clipart",
+      "gif": "animated"
     }
   },
   "chars_to_clean_urls": ["|", ",", "-", ";", "?", "!", "(", ")", "/", ":",".", "\\","\"" ]
