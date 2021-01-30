@@ -19,15 +19,16 @@ def checkdirexist(path):
     else:
         os.mkdir(path)
 
-#add new search key into array ["cat","t-shirt","apple","orange","pear","fish"]
-search_keys= ["green trouser portrait 2020"]
+search_keys= ["blue trouser portrait 2020"]
 
-number_of_images = "all"
+#number_of_images = "all"
+number_of_images = 100
 
 width_screen, height_screen = get_monitors()[0].width,get_monitors()[0].height
 print(width_screen,height_screen)
 min_resolution=(0,0)
 max_resolution=(width_screen,height_screen)
+
 
 if __name__ == '__main__':
     for search_key in search_keys:

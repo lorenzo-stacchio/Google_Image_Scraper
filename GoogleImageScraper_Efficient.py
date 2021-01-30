@@ -12,7 +12,7 @@ import json
 
 class GoogleImageScraper():
     
-    def __init__(self,webdriver_path,image_path, search_key,number_of_images, screen_width, screen_height,similar_images = False, link_similar_image=None,color=None, headless=False):
+    def __init__(self,webdriver_path,image_path, search_key,number_of_images, screen_width, screen_height,similar_images = False, link_similar_image=None,color=None, headless=True):
         self.search_key = search_key
         self.number_of_images = number_of_images
         self.webdriver_path = webdriver_path
@@ -83,6 +83,7 @@ class GoogleImageScraper():
         self.driver.close()
         return "https://www.google.com/" + link_similar_images[0]['href'] #add prefix basing on href value
 
+
     def get_url_image_from_dedicated_google_url(self, url):
         assert url  # url must be not None
         r = requests.get(url)
@@ -90,13 +91,10 @@ class GoogleImageScraper():
         images = soup.findAll('img')  # there are two images tags, the second one contains the good url
         return images[1]['src']  # return its source
 
-    def get_all_original_urls_from_page(self, html_page, num_of_images_found):
-        # This will create a list of buyers:
-        image_urls,image_halts = [],[]
-        soup = BeautifulSoup(html_page, "html.parser")
-        link_similar_images = soup.findAll("a", class_="wXeWr islib nfEiy mM5pbd")
-        print(len(link_similar_images))
-        for link in link_similar_images:
+    @staticmethod
+    def get_original_urls_from_list_of_links(self, link_similar_images_list):
+        image_urls = []
+        for link in link_similar_images_list:
             try:
                 if link.has_attr('href') and "/imgres?imgurl=" in link['href']:
                     url = "https://www.google.com/" + link['href']
@@ -105,6 +103,44 @@ class GoogleImageScraper():
                     image_urls.append(url)
             except Exception as e:
                 print(e)
+        return image_urls
+
+    def get_all_original_urls_from_page(self, html_page, num_of_images_found, workers = mp.cpu_count()):
+        # This will create a list of buyers:
+        image_urls = []
+        soup = BeautifulSoup(html_page, "html.parser")
+        link_similar_images = soup.findAll("a", class_="wXeWr islib nfEiy mM5pbd")[:num_of_images_found]
+        print(len(link_similar_images))
+        if workers==1:
+            image_urls = self.get_original_urls_from_list_of_links(self, link_similar_images)
+        else:
+            partitions = workers
+            processes = []
+            parts_size = int(len(link_similar_images)/(partitions))
+            rest = round(len(link_similar_images)%partitions)
+            for idx in range(partitions):
+                start = idx*parts_size
+                if idx == partitions-1:# this is last
+                    end = start + parts_size + rest
+                else:
+                    end = start + parts_size
+                print("Partition fetching urls", start,end)
+                p = Process(target=self.get_original_urls_from_list_of_links, args=(self, link_similar_images[start:end]))
+                p.start()
+                print("Process %s started fetching urls"%(idx))
+                processes.append(p)
+            for p in processes:
+                p.join()
+
+        # for link in link_similar_images[:num_of_images_found]:
+        #     try:
+        #         if link.has_attr('href') and "/imgres?imgurl=" in link['href']:
+        #             url = "https://www.google.com/" + link['href']
+        #             url = self.get_url_image_from_dedicated_google_url(url)
+        #             url = self.adjust_url(url)
+        #             image_urls.append(url)
+        #     except Exception as e:
+        #         print(e)
         return image_urls
 
     def adjust_url(self,url):
@@ -153,13 +189,14 @@ class GoogleImageScraper():
         # Goes down until we reach the end
         last_height = self.driver.execute_script("return document.body.scrollHeight")
         end_reached = False
+        print("----BROWSING----")
         while(not end_reached):
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             try:
                 self.driver.find_element_by_xpath("//input[@value='Mostra altri risultati']").click()
             except Exception as _:
                 pass
-            time.sleep(1)
+            time.sleep(2)
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 end_reached = True
@@ -168,14 +205,16 @@ class GoogleImageScraper():
         print("----PARSING LINKS TO HTML PAGE FOR SINGLE IMAGES----")
         a_images = {idx+1: el for idx, el in enumerate(self.driver.find_elements_by_xpath('//*[@id="islrg"]/div[1]/div/a[1]'))}
         num_of_images_found = len(a_images)
-        print(str(num_of_images_found))
+        print("Images found:", str(num_of_images_found))
 
         if self.number_of_images=="all":
             self.number_of_images = num_of_images_found
         elif self.number_of_images> num_of_images_found:
             # check number of images to download is less than images found otherwise put max limit
             self.number_of_images = num_of_images_found
-        for indx in range(1, self.number_of_images): # TODO CAMBIA QUA IL CODICE SENNO FA CAGARE
+
+        print("----CLICKING ON IMAGE TO RETRIEVE URLS----")
+        for indx in range(1, self.number_of_images):
             try:
                 imgurl = self.driver.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img' % (
                     str(indx)))  # con questo arrivi a cliccare all'immagine numero n
@@ -184,6 +223,7 @@ class GoogleImageScraper():
             except Exception as _:
                 pass
         time.sleep(2)
+        print("----FETCHING URLS----")
         image_urls = self.get_all_original_urls_from_page(self.driver.page_source, self.number_of_images)
         self.driver.close()
         return image_urls,image_halts
@@ -196,7 +236,7 @@ class GoogleImageScraper():
                 opener.addheaders = [('User-agent',
                                       "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3")]
                 ulreq.install_opener(opener)
-                print("Process P downlaoding ", url)
+                print("Process P downloading ", url)
                 # print(image_path + str(partition_id) + "___" + alt + "___" + str(time.time_ns()) + ".jpg")
                 request = ulreq.urlopen(url, timeout=timeout)
                 with open(image_path + str(partition_id) + "___" + alt + "___" + str(time.time_ns()) + ".jpg",
@@ -211,6 +251,7 @@ class GoogleImageScraper():
 
 
     def download_urls(self,image_urls,image_halts, workers = mp.cpu_count()):
+        print("----Downloading URLS----")
         assert workers>0
         assert len(image_urls) == len(image_halts)
         if workers==1:
