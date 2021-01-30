@@ -228,7 +228,7 @@ class GoogleImageScraper():
                 self.driver.find_element_by_xpath("//input[@value='Mostra altri risultati']").click()
             except Exception as _:
                 pass
-            time.sleep(2)
+            time.sleep(self.time_wait_between_scrolling)
             new_height = self.driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 end_reached = True
@@ -254,7 +254,7 @@ class GoogleImageScraper():
                 image_halts = imgurl["alt"]
             except Exception as _:
                 pass
-        time.sleep(2)
+        time.sleep(self.time_wait_between_scrolling)
         print("----FETCHING URLS----")
         image_urls = self.get_all_original_urls_from_page(self.driver.page_source, self.number_of_images)
         self.driver.close()

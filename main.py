@@ -19,10 +19,10 @@ def checkdirexist(path):
     else:
         os.mkdir(path)
 
-search_keys= ["blue trouser portrait 2020"]
+search_keys= ["blue trouser 2020"]
 
-#number_of_images = "all"
-number_of_images = 20
+number_of_images = "all"
+#number_of_images = 20
 
 width_screen, height_screen = get_monitors()[0].width,get_monitors()[0].height
 print(width_screen,height_screen)
@@ -35,10 +35,8 @@ if __name__ == '__main__':
         image_path = os.getcwd() + "\\photos\\" +search_key +"\\"
         checkdirexist(image_path)
         t = time.time()
-        #image_scrapper = GoogleImageScraper(webdriver_path,image_path,search_key,number_of_images,width_screen,height_screen)
-        #image_scrapper = GoogleImageScraper(webdriver_path,image_path,search_key,number_of_images,width_screen,height_screen,similar_images = True, link_similar_image="https://static.zara.net/photos///contents/mkt/spots/ss21-north-new-in-man/subhome-xmedia-03//w/1900/img-large-landscape-513a9b3af139cdc88ef8cb6ea3c9907c_0.jpg?ts=1611344365227")
         image_scrapper = GoogleImageScraper(webdriver_path, image_path, search_key, number_of_images, width_screen,
-                                            height_screen, color="green", shape="tall",photo_type="photo", headless=False)
+                                            height_screen, color="blue", shape="tall",photo_type="photo", headless=True)
         image_urls,image_halts = image_scrapper.find_image_urls()
         print(len(image_urls), len(image_halts))
         print(image_urls)
