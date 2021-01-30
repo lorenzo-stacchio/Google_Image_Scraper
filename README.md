@@ -13,7 +13,7 @@ This scraper is organized in three steps:
 
 Follows a speeded-up example
 
-![Query example](example.gif)
+![Query example](example.GIF)
 
 # TODO
 * Cmd like commands with argument parsing
