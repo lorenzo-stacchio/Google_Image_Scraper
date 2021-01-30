@@ -43,6 +43,7 @@ class GoogleImageScraper():
             config_dict = json.loads(config_file)
             return config_dict
 
+
     def init_parameters(self, config_dict):
         print(config_dict)
         socket.setdefaulttimeout(config_dict["time"]["timeout_for_download_images"]) #set time limit to download
@@ -66,12 +67,6 @@ class GoogleImageScraper():
             self.url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(link_similar_image)
             self.url = self.get_url_similar_images_google(self.url)
 
-    def adjust_string_path(self, alt_image):
-        for bad_char in self.chars_to_clean_urls:
-            alt_image = alt_image.replace(bad_char, "")
-        alt_image = " ".join(alt_image.split())
-        alt_image = alt_image.replace(" ", "_")
-        return alt_image
 
     def get_url_similar_images_google(self,url):
         #TO DO
@@ -91,7 +86,15 @@ class GoogleImageScraper():
         images = soup.findAll('img')  # there are two images tags, the second one contains the good url
         return images[1]['src']  # return its source
 
-    @staticmethod
+
+    def adjust_string_path(self, alt_image):
+        for bad_char in self.chars_to_clean_urls:
+            alt_image = alt_image.replace(bad_char, "")
+        alt_image = " ".join(alt_image.split())
+        alt_image = alt_image.replace(" ", "_")
+        return alt_image
+
+
     def get_original_urls_from_list_of_links(self, link_similar_images_list):
         image_urls = []
         for link in link_similar_images_list:
@@ -105,32 +108,43 @@ class GoogleImageScraper():
                 print(e)
         return image_urls
 
+
+    def adjust_url(self,url):
+        test_image = [1 if format in url else 0 for format in [".jpg", ".png", ".jpeg"]]
+        if "lh3.googleusercontent.com" in url:
+            url += "=w1000"
+        elif sum(test_image) > 0:
+            extension = [".jpg", ".png", ".jpeg"][test_image.index(1)]
+            url = url.split(extension)[0] + extension  # remove bad queries from link
+        return url
+
+
     def get_all_original_urls_from_page(self, html_page, num_of_images_found, workers = mp.cpu_count()):
         # This will create a list of buyers:
         image_urls = []
         soup = BeautifulSoup(html_page, "html.parser")
         link_similar_images = soup.findAll("a", class_="wXeWr islib nfEiy mM5pbd")[:num_of_images_found]
         print(len(link_similar_images))
-        if workers==1:
-            image_urls = self.get_original_urls_from_list_of_links(self, link_similar_images)
-        else:
-            partitions = workers
-            processes = []
-            parts_size = int(len(link_similar_images)/(partitions))
-            rest = round(len(link_similar_images)%partitions)
-            for idx in range(partitions):
-                start = idx*parts_size
-                if idx == partitions-1:# this is last
-                    end = start + parts_size + rest
-                else:
-                    end = start + parts_size
-                print("Partition fetching urls", start,end)
-                p = Process(target=self.get_original_urls_from_list_of_links, args=(self, link_similar_images[start:end]))
-                p.start()
-                print("Process %s started fetching urls"%(idx))
-                processes.append(p)
-            for p in processes:
-                p.join()
+        #if workers==1:
+        image_urls = self.get_original_urls_from_list_of_links(link_similar_images)
+        # else:
+        #     partitions = workers
+        #     processes = []
+        #     parts_size = int(len(link_similar_images)/(partitions))
+        #     rest = round(len(link_similar_images)%partitions)
+        #     for idx in range(partitions):
+        #         start = idx*parts_size
+        #         if idx == partitions-1:# this is last
+        #             end = start + parts_size + rest
+        #         else:
+        #             end = start + parts_size
+        #         print("Partition fetching urls", start,end)
+        #         p = Process(target=get_original_urls_from_list_of_links, args=(link_similar_images[start:end]))
+        #         p.start()
+        #         print("Process %s started fetching urls"%(idx))
+        #         processes.append(p)
+        #     for p in processes:
+        #         p.join()
 
         # for link in link_similar_images[:num_of_images_found]:
         #     try:
@@ -142,15 +156,6 @@ class GoogleImageScraper():
         #     except Exception as e:
         #         print(e)
         return image_urls
-
-    def adjust_url(self,url):
-        test_image = [1 if format in url else 0 for format in [".jpg", ".png", ".jpeg"]]
-        if "lh3.googleusercontent.com" in url:
-            url += "=w1000"
-        elif sum(test_image) > 0:
-            extension = [".jpg", ".png", ".jpeg"][test_image.index(1)]
-            url = url.split(extension)[0] + extension  # remove bad queries from link
-        return url
 
     def init_driver(self):
         # custom options

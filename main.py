@@ -22,7 +22,7 @@ def checkdirexist(path):
 search_keys= ["blue trouser portrait 2020"]
 
 #number_of_images = "all"
-number_of_images = 100
+number_of_images = 20
 
 width_screen, height_screen = get_monitors()[0].width,get_monitors()[0].height
 print(width_screen,height_screen)
@@ -45,5 +45,5 @@ if __name__ == '__main__':
         if len(image_halts)==0:
             image_halts = ["image" + str(idx) for idx in range(len(image_urls))]
         print("Time consumed finding urls", time.time()-t)
-        image_scrapper.download_urls(image_urls,image_halts)
+        image_scrapper.download_urls(image_urls,image_halts,2)
         print("Time for downloading urls", time.time() - t)
