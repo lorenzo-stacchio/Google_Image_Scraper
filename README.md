@@ -11,7 +11,9 @@ This scraper is organized in three steps:
 * It click an all the images found, to retrieve origin urls.
 * It parse all the found urls and download images through them exploiting multi-processing. 
 
-![Query example](name-of-gif-file.gif)
+Follows a speeded-up example
+
+![Query example](example.gif)
 
 # TODO
 * Cmd like commands with argument parsing
