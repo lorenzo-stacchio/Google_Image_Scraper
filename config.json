@@ -9,8 +9,15 @@
     "colors": {
       "normal": ["green", "yellow", "orange", "red", "white", "teal", "blue", "purple", "pink", "gray",
                                     "black", "brown"],
+      "colorized": "color",
       "trasparent_code": "trans",
       "black_and_white": "gray"
+    },
+    "shapes":{
+      "tall": "t",
+      "square": "s",
+      "wide": "w",
+      "panoramic": "xw"
     }
   },
   "chars_to_clean_urls": ["|", ",", "-", ";", "?", "!", "(", ")", "/", ":",".", "\\","\"" ]
