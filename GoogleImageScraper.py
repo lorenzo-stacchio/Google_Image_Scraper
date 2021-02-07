@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+
+@author: Lorenzo Stacchio
+
+"""
 from multiprocessing.context import Process
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
