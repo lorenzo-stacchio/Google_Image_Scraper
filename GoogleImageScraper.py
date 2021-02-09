@@ -72,7 +72,7 @@ class GoogleImageScraper():
         color_params_parsing = ""
         # PARSE FOR FIRST SIMILAR
         if self.similar_image: # other type of research
-            url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(link_similar_image)
+            url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(self.link_similar_image)
             return self.get_url_similar_images_google(url)
         else: # NORMAL SEARCH
             # tra un parametro e l'altro ci va la virgola ---> &tbs=ic:color,iar:t
