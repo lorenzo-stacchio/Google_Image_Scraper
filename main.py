@@ -11,7 +11,7 @@ import shutil
 import time
 import webbrowser
 
-webdriver_path = os.getcwd()+"\\webdriver\\chromedriver.exe"
+webdriver_path = "D:\\Win_programs\\usefult_scripts\\scapers\\Google_Image_Scraper\\webdriver\\firefox.exe"
 
 def checkdirexist(path):
     if os.path.exists(path):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         print("Saving in '%s' \n" % (image_path))
         # image_scrapper = GoogleImageScraper(webdriver_path, image_path, search_key, number_of_images, width_screen,
         #                                     height_screen, color="blue", shape="tall",photo_type="photo", headless=True)
-        image_scrapper = GoogleImageScraper(webdriver_path, image_path, similar_images=True,link_similar_image="https://van-noor.com/wp-content/uploads/2019/06/IMG_0033-768x768.jpg",headless=True)
+        image_scrapper = GoogleImageScraper(webdriver_path, image_path, type_browser="firefox", similar_images=True,link_similar_image="https://van-noor.com/wp-content/uploads/2019/06/IMG_0033-768x768.jpg",headless=True)
         image_urls,image_halts = image_scrapper.find_image_urls()
         if len(image_halts)==0:
             image_halts = ["image" + str(idx) for idx in range(len(image_urls))]

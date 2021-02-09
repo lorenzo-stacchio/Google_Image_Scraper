@@ -20,7 +20,7 @@ from alive_progress import alive_bar
 
 class GoogleImageScraper():
     
-    def __init__(self,webdriver_path,image_path, number_of_images=10,search_key=None, screen_width=1920, screen_height=1080,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
+    def __init__(self,webdriver_path,image_path,type_browser="chrome", number_of_images=10,search_key=None, screen_width=1920, screen_height=1080,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
         self.search_key = search_key
         self.number_of_images = number_of_images
         self.webdriver_path = webdriver_path
@@ -33,6 +33,7 @@ class GoogleImageScraper():
         self.photo_type = photo_type
         self.similar_image = similar_images
         self.link_similar_image = link_similar_image
+        self.type_browser = type_browser
         #self.url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
         self.base_url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
         # Init all this variables with init_parameters()
@@ -188,7 +189,10 @@ class GoogleImageScraper():
         options.add_argument("disable-infobars")
         options.add_argument("--disable-extensions")
         options.add_experimental_option("excludeSwitches", ["enable-logging"]) #silent selenium
-        return webdriver.Chrome(self.webdriver_path, chrome_options=options)
+        if self.type_browser=="chrome":
+            return webdriver.Chrome(self.webdriver_path, chrome_options=options)
+        else:
+            return webdriver.Firefox(executable_path=self.webdriver_path)
 
 
     def find_image_urls(self):
@@ -215,7 +219,7 @@ class GoogleImageScraper():
         print("\n----PARSING LINKS TO HTML PAGE FOR SINGLE IMAGES----")
         a_images = {idx+1: el for idx, el in enumerate(self.driver.find_elements_by_xpath('//*[@id="islrg"]/div[1]/div/a[1]'))}
         num_of_images_found = len(a_images)
-        print("Images found %s in '%s' search"% (str(num_of_images_found), self.search_key))
+        print("Images found %s in '%s' search"% (str(num_of_images_found), str(self.search_key)))
 
         if self.number_of_images=="all":
             self.number_of_images = num_of_images_found
