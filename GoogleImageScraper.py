@@ -20,7 +20,7 @@ from alive_progress import alive_bar
 
 class GoogleImageScraper():
     
-    def __init__(self,webdriver_path,image_path, search_key,number_of_images, screen_width, screen_height,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
+    def __init__(self,webdriver_path,image_path, number_of_images=10,search_key=None, screen_width=1920, screen_height=1080,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
         self.search_key = search_key
         self.number_of_images = number_of_images
         self.webdriver_path = webdriver_path
@@ -44,8 +44,8 @@ class GoogleImageScraper():
         # Load configs and parse arguments
         config_dict = self.load_config()
         self.init_parameters(config_dict)
-        self.url = self.parse_arguments()
         self.driver = self.init_driver()
+        self.url = self.parse_arguments()
 
     def load_config(self):
         with open("config.json", "r") as configs:
@@ -108,7 +108,6 @@ class GoogleImageScraper():
         source = self.driver.page_source
         soup = BeautifulSoup(source, "html.parser")
         link_similar_images = soup.findAll("a", class_= "ekf0x hSQtef")
-        self.driver.close()
         return "https://www.google.com/" + link_similar_images[0]['href'] #add prefix basing on href value
 
 
