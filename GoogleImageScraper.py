@@ -20,7 +20,7 @@ from alive_progress import alive_bar
 
 class GoogleImageScraper():
     
-    def __init__(self,webdriver_path,image_path,type_browser="chrome", number_of_images=10,search_key=None, screen_width=1920, screen_height=1080,similar_images = False, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
+    def __init__(self,webdriver_path,image_path,type_browser="chrome", number_of_images=10,search_key=None, screen_width=1920, screen_height=1080,similar_images = False, filepath_similar_image=None, link_similar_image=None,color=None, shape=None, photo_type=None,headless=True):
         self.search_key = search_key
         self.number_of_images = number_of_images
         self.webdriver_path = webdriver_path
@@ -34,6 +34,7 @@ class GoogleImageScraper():
         self.similar_image = similar_images
         self.link_similar_image = link_similar_image
         self.type_browser = type_browser
+        self.filepath_similar_image = filepath_similar_image
         #self.url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
         self.base_url = "https://www.google.com/search?q=%s&tbm=isch&hl=it&tbs&rlz=1C1UEAD_itIT929IT929&sa=X&ved=0CAEQpwVqFwoTCIDosdGzt-4CFQAAAAAdAAAAABAC&biw=%s&bih=%s"%(search_key,self.screen_width, self.screen_height)
         # Init all this variables with init_parameters()
@@ -73,7 +74,16 @@ class GoogleImageScraper():
         color_params_parsing = ""
         # PARSE FOR FIRST SIMILAR
         if self.similar_image: # other type of research
-            url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(self.link_similar_image)
+            if self.filepath_similar_image:
+                self.driver.get("https://www.google.it/imghp?hl=it")
+                self.driver.find_element_by_xpath("//div[@class='LM8x9c']").click()
+                self.driver.find_element_by_id("awyMjb").send_keys(self.filepath_similar_image)
+                #self.driver.find_element_by_id("submit").click()
+                time.sleep(3)
+                url = self.driver.current_url;
+            else:
+                url = "https://www.google.it/searchbyimage?image_url=%s&encoded_image=&image_content=&filename=&hl=it"%(self.link_similar_image)
+            print(url)
             return self.get_url_similar_images_google(url)
         else: # NORMAL SEARCH
             # tra un parametro e l'altro ci va la virgola ---> &tbs=ic:color,iar:t
@@ -246,6 +256,7 @@ class GoogleImageScraper():
 
     @staticmethod
     def download_single_image(image_path, urls_part, alts_part, timeout, partition_id):
+        print(image_path)
         with alive_bar(total=len(urls_part), title="Process %s downloading images" %(str(partition_id))) as bar:
             for url, alt in zip(urls_part, alts_part):
                 bar()
